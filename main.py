@@ -139,7 +139,7 @@ def to_do_logic(
             ]
         return accuracy_json, loss_json, output_param, file_list
     else:
-        model = joblib.load(f'{in_dir}{os.sep}lightgbm.pkl')
+        model = joblib.load(training_model_path)
         pred = model.predict(X_test)
         pred_df = pd.DataFrame(
             data = pred,
