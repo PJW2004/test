@@ -87,7 +87,7 @@ def to_do_logic(
     y_test = target_dataset[val_scale : test_scale]
 
     # 파라미터 로드
-    with open(f'{out_dir}{os.sep}input_param.json', encoding='utf-8') as param_file:
+    with open(f'{in_dir}{os.sep}input_param.json', encoding='utf-8') as param_file:
         params = json.load(param_file)
     
     compile_param = params.get('compile_opt')

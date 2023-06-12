@@ -1,0 +1,24 @@
+{
+	"format_type": "regression",
+	"model": "lightgbm",
+	"compile_opt": {
+		"max_depth": -1,
+		"n_estimators": 100000,
+		"colsample_bytree": 0.8,
+		"learning_rate": 0.01,
+		"num_leaves": 1500,
+		"reg_lambda": 1,
+		"objective": "regression",
+		"min_child_samples": 30,
+		"random_state": 777,
+		"metric": "mae"
+	},
+	"fitting_opt": {
+		"early_stopping_rounds": 30,
+		"verbose": 500,
+		"categorical_feature": [
+			"item_id",
+			"year"
+		]
+	}
+}

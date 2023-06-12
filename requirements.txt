@@ -1,0 +1,9 @@
+category-encoders
+scikit-learn
+pandas
+numpy
+pydantic[dotenv]
+pandas==1.5.3
+lightgbm
+multipledispatch 
+matplotlib
