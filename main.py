@@ -146,8 +146,12 @@ def to_do_logic(
             index = X_test.index,
             columns = ['predict']
         )
-        pred_df.to_csv(f'{out_dir}{os.sep}output.csv', index=False)
-    
+        pred_df.to_csv(f'{out_dir}{os.sep}output.csv', index=X_test.index)
+        output_param = pred_df.to_dict()
+        file_list: list = [
+            'output.csv',
+        ]
+        return None, None, output_param, file_list
     
 
 
