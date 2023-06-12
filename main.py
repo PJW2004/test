@@ -96,8 +96,6 @@ def to_do_logic(
     fit_param['y'] = y_train
     fit_param['eval_set'] = (X_val, y_val)
 
-
-
     # LightGBM 모듈
     if is_training:
         import lightgbm
