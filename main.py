@@ -146,14 +146,12 @@ def to_do_logic(
             index = X_test.index,
             columns = ['predict']
         )
-        pred_df.to_csv(f'{out_dir}{os.sep}output.csv', index=X_test.index)
+        pred_df.to_csv(f'{out_dir}{os.sep}output.csv')
         output_param = pred_df.to_dict()
         file_list: list = [
             'output.csv',
         ]
         return None, None, output_param, file_list
-    
-
 
 if __name__ == "__main__":
     in_dir = "."
@@ -161,7 +159,8 @@ if __name__ == "__main__":
     result = to_do_logic(
         in_dir = in_dir,
         out_dir = out_dir,
-        is_training = True,
+        is_training = False,
+        training_model_path = "lightgbm.pkl"
     )
     print(result)
 
