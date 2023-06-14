@@ -22,76 +22,37 @@ def to_do_logic(
 
     missing_data = deepcopy(raw_data)
 
-    missing_data = raw_data.dropna(subset=['item_price', 'isweekend'])
+    missing_data = raw_data.dropna(subset=)
 
-    missing_data.loc[:, ['resid', 'trend']] = missing_data[['resid', 'trend']].fillna(missing_data.median(numeric_only=True))
+    missing_data.loc[:, ] = missing_data[].fillna(missing_data.median(numeric_only=True))
 
-    missing_data.loc[:, ['year']] = missing_data[['year']].fillna(method="ffill")
+    missing_data.loc[:, ] = missing_data[].fillna(method="ffill")
 
-    outlier_data = deepcopy(missing_data)
+    missing_data.set_index(['date'], inplace=True)
+    missing_data.index = pd.to_datetime(missing_data.index)
 
-    if is_training:
-        for _, group in outlier_data.groupby(['shop_id', 'item_id']):
-            q1 = group["item_cnt_day"].quantile(0.25)
-            q3 = group["item_cnt_day"].quantile(0.75)
-            iqr = q3 - q1
-            lower_bound = q1 - 1.5 * iqr
-            upper_bound = q3 + 1.5 * iqr
-            outlier_idx = group[(group["item_cnt_day"] < lower_bound) | (group["item_cnt_day"] > upper_bound)]["item_cnt_day"].index
-            outlier_data = outlier_data.drop(outlier_idx, axis=0)
-
-    if is_training:
-        for _, group in outlier_data.groupby(['shop_id', 'item_id']):
-            z_scores = (group["item_cnt_day"] - group["item_cnt_day"].mean()) / group["item_cnt_day"].std()
-            norm_dist = group[np.abs(z_scores) <= 3]["item_cnt_day"]
-            outlier_idx = group[np.abs(z_scores) > 3]["item_cnt_day"].index
-            for i in outlier_idx:
-                outlier_data["item_cnt_day"][i] = min(norm_dist)
-
-    outlier_data.set_index(['date'], inplace=True)
-    outlier_data.index = pd.to_datetime(outlier_data.index)
-
-    engineering_data = deepcopy(outlier_data)
-
-    import statsmodels.api as sm
-    seasonal_data = pd.DataFrame(columns=["trend", "seasonal", "resid"])
-    for _, g_dataframe in outlier_data.groupby(['shop_id', 'item_id']):
-        seasonal = sm.tsa.seasonal_decompose(
-            g_dataframe["item_cnt_day"], model="additive", period=7, extrapolate_trend="freq"
-        )
-        seasonal_temp = pd.DataFrame([seasonal.trend, seasonal.seasonal, seasonal.resid])
-        seasonal_temp = seasonal_temp.transpose()
-        seasonal_data = pd.concat([seasonal_data, seasonal_temp], axis=0)
-    engineering_data["trend"] = seasonal_data["trend"].tolist()
-    engineering_data["seasonal"] = seasonal_data["seasonal"].tolist()
-    engineering_data["resid"] = seasonal_data["resid"].tolist()
-
-    column_list = ['year', 'month']
-    for column in column_list:
-        engineering_data[column] = getattr(engineering_data.index, column)
-
-    encoding_data = deepcopy(engineering_data)
+    encoding_data = deepcopy(missing_data)
 
     from sklearn.preprocessing import OneHotEncoder
-    column_list = ['item_id', 'year']
+    column_list = 
     if is_training:
         encoded_path = f"{out_dir}{os.sep}OneHotEncoder.pkl"
         encoder = OneHotEncoder(sparse=False)
-        encoded_data = encoder.fit_transform(engineering_data[column_list])
-        encoded_data = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(column_list), index=engineering_data.index)
+        encoded_data = encoder.fit_transform(missing_data[column_list])
+        encoded_data = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(column_list), index=missing_data.index)
         encoding_data = pd.concat([encoding_data, encoded_data], axis=1)
         joblib.dump(encoder, encoded_path)
     else:
         encoded_path = f"{in_dir}{os.sep}OneHotEncoder.pkl"
         encoder = joblib.load(encoded_path)
-        encoded_data = encoder.transform(engineering_data[column_list])
-        encoded_data = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(column_list), index=engineering_data.index)
+        encoded_data = encoder.transform(missing_data[column_list])
+        encoded_data = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(column_list), index=missing_data.index)
         encoding_data = pd.concat([encoding_data, encoded_data], axis=1)
 
     scaling_data = deepcopy(encoding_data)
 
     from sklearn.preprocessing import MinMaxScaler
-    column_list = ['trend', 'seasonal', 'resid']
+    column_list = 
     if is_training:
         scaling_path = f"{out_dir}{os.sep}MinMaxScaler.pkl"
         scaler = MinMaxScaler()
@@ -136,15 +97,15 @@ def to_do_logic(
     fit_param['y'] = y_train
     fit_param['eval_set'] = [(X_val, y_val)]
 
-    # LightGBM 모듈
+    # XGBoost 모듈
     if is_training:
-        import lightgbm
-        from lightgbm.sklearn import LGBMRegressor
+        import xgboost
+        from xgboost.sklearn import XGBRegressor
         from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-        model = LGBMRegressor(**compile_param)
+        model = XGBRegressor(**compile_param)
 
         model.fit(**fit_param)
-        joblib.dump(model, f'{out_dir}{os.sep}lightgbm.pkl')
+        joblib.dump(model, f'{out_dir}{os.sep}xgboost.pkl')
             
         if not X_test.empty:
             pred = model.predict(X_test)
@@ -155,7 +116,7 @@ def to_do_logic(
         pred_df['predicted'] = pred_df['predicted'].apply(lambda x: int(round(x)))
         pred_df.to_csv(f'{out_dir}{os.sep}output.csv', index=False)
     
-        lightgbm.plot_importance(model)
+        xgboost.plot_importance(model)
         plt.savefig(f'{out_dir}{os.sep}feature_importance.png')
     
         accuracy_json: dict = {'r_squared': 1-(1-r2_score(y_test, pred))*((len(X_test)-1) / (len(X_test)-X_test.shape[1]-1))}
@@ -172,7 +133,7 @@ def to_do_logic(
         }
         file_list: list = [
 			'output.csv',
-            'lightgbm.pkl',
+            'xgboost.pkl',
             'loss.png',
             'feature_importance.png',
         ]
