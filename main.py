@@ -48,7 +48,7 @@ def to_do_logic(
             for i in outlier_idx:
                 outlier_data["item_cnt_day"][i] = min(norm_dist)
 
-    outlier_data["date"] = pd.to_datetime(outlier_data["date"])
+    outlier_data['date'] = pd.to_datetime(outlier_data['date'])
     outlier_data.set_index(['date'], inplace=True)
 
     engineering_data = deepcopy(outlier_data)
@@ -198,11 +198,11 @@ def to_do_logic(
 if __name__ == "__main__":
     in_dir = "."
     out_dir = "."
-    training_model_path = "xgboost.pkl"
+    training_model_path = "model_name"
     result = to_do_logic(
         in_dir = in_dir,
         out_dir = out_dir,
-        is_training = False,
+        is_training = True,
         training_model_path = training_model_path
     )
     print(result)
