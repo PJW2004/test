@@ -48,8 +48,8 @@ def to_do_logic(
             for i in outlier_idx:
                 outlier_data["item_cnt_day"][i] = min(norm_dist)
 
+    outlier_data["date"] = pd.to_datetime(outlier_data["date"])
     outlier_data.set_index(['date'], inplace=True)
-    outlier_data.index = pd.to_datetime(outlier_data.index)
 
     engineering_data = deepcopy(outlier_data)
 
