@@ -143,7 +143,7 @@ def to_do_logic(
         pred = model.predict(X_test)
         pred_df = pd.DataFrame(
             data = pred,
-            index = X_test.index,
+            index = X_test.index.strftime("%Y-%m-%d"),
             columns = ['predict']
         )
         pred_df.to_csv(f'{out_dir}{os.sep}output.csv')
