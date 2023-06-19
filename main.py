@@ -65,15 +65,15 @@ def to_do_logic(
     fit_param['y'] = y_train
     fit_param['eval_set'] = [(X_val, y_val)]
 
-    # XGBoost 모듈
+    # Lightgbm 모듈
     if is_training:
-        import xgboost
-        from xgboost.sklearn import XGBClassifier
+        import lightgbm
+        from lightgbm.sklearn import LGBMClassifier
         from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, ConfusionMatrixDisplay, f1_score
-        model = XGBClassifier(**compile_param)
+        model = LGBMClassifier(**compile_param)
 
         model.fit(**fit_param)
-        joblib.dump(model, f'{out_dir}{os.sep}xgboost.pkl')
+        joblib.dump(model, f'{out_dir}{os.sep}lightgbm.pkl')
             
         # X_test를 사용할 경우와 X_validation을 사용할 경우
         if not X_test.empty:
@@ -94,7 +94,7 @@ def to_do_logic(
         f1 = f1_score(y_test, pred)
     
         # Feature Importance 계산
-        xgboost.plot_importance(model)
+        lightgbm.plot_importance(model)
         plt.savefig(f'{out_dir}{os.sep}feature_importance.png')
 
         # 시각화
@@ -111,7 +111,7 @@ def to_do_logic(
         fpr, tpr, thresholds = roc_curve(y_test, pred_proba)
         auc = round(roc_auc, 3)
         plt.figure(figsize = (15, 8))
-        plt.plot(fpr, tpr, label=f"XGBoost Classifier, AUC={auc}", color="b")
+        plt.plot(fpr, tpr, label=f"Lightgbm Classifier, AUC={auc}", color="b")
         plt.plot([0, 1], [0, 1], color = "g")
         plt.title("ROC Curve")
         plt.legend(loc="upper right")
@@ -132,7 +132,7 @@ def to_do_logic(
         }
         file_list: list = [
 			'output.csv',
-            'xgboost.pkl',
+            'lightgbm.pkl',
             'confusion_matrix.png',
             'roc_curve.png'
         ]
